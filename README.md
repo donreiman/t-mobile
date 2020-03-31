@@ -55,6 +55,12 @@ Please provide a short code review of the base `master` branch:
 
 > Make a PR to add accessability features to the web application
 
+**
+Verified form controls are keyboard accessible
+Added landmark element
+Added h1 element
+Added label to stock symbol textbox
+**
 
 ### Task 2
 
