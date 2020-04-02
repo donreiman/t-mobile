@@ -44,10 +44,35 @@ Please provide a short code review of the base `master` branch:
 
 #### Task 1-A
 1. What is done well?
+
+**
+application file structure is well laid out
+good use of feature modules
+ngrx is utilized correctly
+code passes TS-lint test
+components are well designed
+**
+
 2. What would you change?
+
+**
+make sure to unsubscribe from observable subscriptions
+libs/shared/ui/chart/src/lib/chart/chart.component.html
+  markup references a non-existent component class property
+**
+
 3. Are there any code smells or problematic implementations?
 
+**
+When a component subscribes to an observable, it is good practice to unsubscribe in the ngOnDestroy method. Failure to do so can result in memory leaks and inadvertent duplicate subscriptions when a component is reloaded.
+**
+
 > Make a PR to fix at least one of the issues that you identify
+
+**
+created branch
+task-1-a
+**
 
 #### Task 1-B
 
