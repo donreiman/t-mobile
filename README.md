@@ -69,11 +69,6 @@ When a component subscribes to an observable, it is good practice to unsubscribe
 
 > Make a PR to fix at least one of the issues that you identify
 
-**
-created branch
-task-1-a
-**
-
 #### Task 1-B
 
 [Accessability](https://www.w3.org/WAI/GL/WCAG20/) is an important feature of all public facing websites.  
@@ -85,6 +80,10 @@ Verified form controls are keyboard accessible
 Added landmark element
 Added h1 element
 Added label to stock symbol textbox
+**
+
+**
+created branch: task-1
 **
 
 ### Task 2
