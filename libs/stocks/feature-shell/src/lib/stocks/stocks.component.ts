@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { PriceQueryFacade } from '@coding-challenge/stocks/data-access-price-query';
 
 @Component({
@@ -12,6 +12,9 @@ export class StocksComponent implements OnInit {
   symbol: string;
   period: string;
 
+  startDate = new FormControl(new Date(), Validators.required);
+  endDate = new FormControl(new Date(), Validators.required);
+
   quotes$ = this.priceQuery.priceQueries$;
 
   timePeriods = [
@@ -22,7 +25,8 @@ export class StocksComponent implements OnInit {
     { viewValue: 'Year-to-date', value: 'ytd' },
     { viewValue: 'Six months', value: '6m' },
     { viewValue: 'Three months', value: '3m' },
-    { viewValue: 'One month', value: '1m' }
+    { viewValue: 'One month', value: '1m' },
+    { viewValue: 'Date range', value: 'date-range' },
   ];
 
   constructor(private fb: FormBuilder, private priceQuery: PriceQueryFacade) {
@@ -37,7 +41,30 @@ export class StocksComponent implements OnInit {
   fetchQuote() {
     if (this.stockPickerForm.valid) {
       const { symbol, period } = this.stockPickerForm.value;
-      this.priceQuery.fetchQuote(symbol, period);
+      if (period === 'date-range') {
+        this.priceQuery.fetchQuoteForDateRange(symbol, new Date(this.startDate.value), new Date(this.endDate.value))
+      }
+      else {
+        this.priceQuery.fetchQuote(symbol, period);
+      }
+    }
+  }
+
+  startDateChange(event: Event) {
+    if (new Date(this.startDate.value) > new Date()) {
+      this.startDate.setValue(new Date());
+    }
+    if (new Date(this.startDate.value) > new Date(this.endDate.value)) {
+      this.endDate.setValue(this.startDate.value);
+    }
+  }
+
+  endDateChange(event: Event) {
+    if (new Date(this.endDate.value) > new Date()) {
+      this.endDate.setValue(new Date());
+    }
+    if (new Date(this.startDate.value) > new Date(this.endDate.value)) {
+      this.startDate.setValue(this.endDate.value);
     }
   }
 }

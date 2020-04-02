@@ -4,6 +4,7 @@ import { PriceQueryResponse } from './price-query.type';
 export enum PriceQueryActionTypes {
   SelectSymbol = 'priceQuery.selectSymbol',
   FetchPriceQuery = 'priceQuery.fetch',
+  FetchPriceQueryForDateRange = 'priceQuery.fetchPriceQueryForDateRange',
   PriceQueryFetched = 'priceQuery.fetched',
   PriceQueryFetchError = 'priceQuery.error'
 }
@@ -11,6 +12,11 @@ export enum PriceQueryActionTypes {
 export class FetchPriceQuery implements Action {
   readonly type = PriceQueryActionTypes.FetchPriceQuery;
   constructor(public symbol: string, public period: string) {}
+}
+
+export class FetchPriceQueryForDateRange implements Action {
+  readonly type = PriceQueryActionTypes.FetchPriceQueryForDateRange;
+  constructor(public symbol: string, public startDate: Date, public endDate: Date) {}
 }
 
 export class PriceQueryFetchError implements Action {
