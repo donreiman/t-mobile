@@ -1,12 +1,7 @@
-import { HttpClient } from '@angular/common/http';
-import { Inject, Injectable } from '@angular/core';
-import {
-  StocksAppConfig,
-  StocksAppConfigToken
-} from '@coding-challenge/stocks/data-access-app-config';
+import { Injectable } from '@angular/core';
 import { Effect } from '@ngrx/effects';
 import { DataPersistence } from '@nrwl/nx';
-import { map, filter, concatMap, toArray, tap } from 'rxjs/operators';
+import { map, filter, concatMap, toArray } from 'rxjs/operators';
 import {
   FetchPriceQuery,
   PriceQueryActionTypes,
@@ -17,6 +12,7 @@ import {
 import { PriceQueryPartialState } from './price-query.reducer';
 import { PriceQueryResponse } from './price-query.type';
 import { from } from 'rxjs';
+import { IexService } from '../../services/iex.service';
 
 @Injectable()
 export class PriceQueryEffects {
@@ -24,12 +20,7 @@ export class PriceQueryEffects {
     PriceQueryActionTypes.FetchPriceQuery,
     {
       run: (action: FetchPriceQuery, state: PriceQueryPartialState) => {
-        return this.httpClient
-          .get(
-            `${this.env.apiURL}/beta/stock/${action.symbol}/chart/${
-              action.period
-            }?token=${this.env.apiKey}`
-          )
+        return this.iexService.fetchPriceQuery(action.symbol, action.period)
           .pipe(
             map(resp => new PriceQueryFetched(resp as PriceQueryResponse[]))
           );
@@ -45,10 +36,7 @@ export class PriceQueryEffects {
     PriceQueryActionTypes.FetchPriceQueryForDateRange,
     {
       run: (action: FetchPriceQueryForDateRange, state: PriceQueryPartialState) => {
-        return this.httpClient
-          .get(
-            `${this.env.apiURL}/beta/stock/${action.symbol}/chart/max?token=${this.env.apiKey}`
-          )
+        return this.iexService.fetchPriceQuery(action.symbol, 'max')
           .pipe(
             concatMap((priceQueryResponses: PriceQueryResponse[]) => from(priceQueryResponses)),
             filter((priceQueryResponse: PriceQueryResponse) => {
@@ -68,8 +56,7 @@ export class PriceQueryEffects {
   );
 
   constructor(
-    @Inject(StocksAppConfigToken) private env: StocksAppConfig,
-    private httpClient: HttpClient,
-    private dataPersistence: DataPersistence<PriceQueryPartialState>
+    private dataPersistence: DataPersistence<PriceQueryPartialState>,
+    private iexService: IexService
   ) {}
 }
