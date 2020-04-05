@@ -1,20 +1,18 @@
-import { HttpClient } from '@angular/common/http';
-import { Inject, Injectable } from '@angular/core';
-import {
-  StocksAppConfig,
-  StocksAppConfigToken
-} from '@coding-challenge/stocks/data-access-app-config';
+import { Injectable } from '@angular/core';
 import { Effect } from '@ngrx/effects';
 import { DataPersistence } from '@nrwl/nx';
-import { map } from 'rxjs/operators';
+import { map, filter, concatMap, toArray } from 'rxjs/operators';
 import {
   FetchPriceQuery,
   PriceQueryActionTypes,
   PriceQueryFetched,
-  PriceQueryFetchError
+  PriceQueryFetchError,
+  FetchPriceQueryForDateRange
 } from './price-query.actions';
 import { PriceQueryPartialState } from './price-query.reducer';
 import { PriceQueryResponse } from './price-query.type';
+import { from } from 'rxjs';
+import { IexService } from '../../services/iex.service';
 
 @Injectable()
 export class PriceQueryEffects {
@@ -22,12 +20,7 @@ export class PriceQueryEffects {
     PriceQueryActionTypes.FetchPriceQuery,
     {
       run: (action: FetchPriceQuery, state: PriceQueryPartialState) => {
-        return this.httpClient
-          .get(
-            `${this.env.apiURL}/beta/stock/${action.symbol}/chart/${
-              action.period
-            }?token=${this.env.apiKey}`
-          )
+        return this.iexService.fetchPriceQuery(action.symbol, action.period)
           .pipe(
             map(resp => new PriceQueryFetched(resp as PriceQueryResponse[]))
           );
@@ -39,9 +32,30 @@ export class PriceQueryEffects {
     }
   );
 
+  @Effect() loadPriceForDateRangeQuery$ = this.dataPersistence.fetch(
+    PriceQueryActionTypes.FetchPriceQueryForDateRange,
+    {
+      run: (action: FetchPriceQueryForDateRange, state: PriceQueryPartialState) => {
+        return this.iexService.fetchPriceQuery(action.symbol, 'max')
+          .pipe(
+            concatMap((priceQueryResponses: PriceQueryResponse[]) => from(priceQueryResponses)),
+            filter((priceQueryResponse: PriceQueryResponse) => {
+              const date = new Date(priceQueryResponse.date);
+              return action.startDate <= date && action.endDate >= date;
+            }),
+            toArray(),
+            map((filteredResponse: PriceQueryResponse[]) => new PriceQueryFetched(filteredResponse))
+          );
+      },
+
+      onError: (action: FetchPriceQueryForDateRange, error) => {
+        return new PriceQueryFetchError(error);
+      }
+    }
+  );
+
   constructor(
-    @Inject(StocksAppConfigToken) private env: StocksAppConfig,
-    private httpClient: HttpClient,
-    private dataPersistence: DataPersistence<PriceQueryPartialState>
+    private dataPersistence: DataPersistence<PriceQueryPartialState>,
+    private iexService: IexService
   ) {}
 }
