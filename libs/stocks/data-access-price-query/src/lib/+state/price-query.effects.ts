@@ -40,7 +40,6 @@ export class PriceQueryEffects {
           .pipe(
             concatMap((priceQueryResponses: PriceQueryResponse[]) => from(priceQueryResponses)),
             filter((priceQueryResponse: PriceQueryResponse) => {
-              console.log(priceQueryResponse);
               const date = new Date(priceQueryResponse.date);
               return action.startDate <= date && action.endDate >= date;
             }),
